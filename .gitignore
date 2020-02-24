@@ -1,0 +1,4 @@
+.env
+.rbenv-vars
+pokill/*
+!pokill/.gitkeep

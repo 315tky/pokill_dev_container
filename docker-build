@@ -1,0 +1,2 @@
+#!/bin/sh
+docker build -t rails-dev --network host -f Dockerfile.rails .

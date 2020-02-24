@@ -1,0 +1,19 @@
+FROM ruby:2.6.5
+
+RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
+RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        postgresql-client yarn nodejs \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app/pokill
+COPY pokill/Gemfile* ./
+#RUN git clone https://github.com/315tky/pokill.git/ pokill/ 
+RUN gem install bundler:2.0.2
+RUN bundle install
+#RUN yarn install --check-files
+
+EXPOSE 3000
+CMD ["rails", "server", "-b", "0.0.0.0"]
