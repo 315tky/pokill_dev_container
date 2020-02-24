@@ -3,7 +3,7 @@ Instructions for setting up a dev rails container for pokill
 1. git clone https://github.com/315tky/pokill_dev_container.git
 2. cd pokill_dev_container
 3. rm pokill/.gitkeep && git clone https://github.com/315tky/pokill.git pokill/
-4. cp pokill/env pokill/.env 
+4. cp pokill/env .env 
 5. edit .env providing values as necessary
 6. cd pokill && yarn install --check-files #<i> ( is this correct or needs to be done in container build ?)</i>
 7. ./docker-build # to build the container
