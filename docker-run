@@ -1,2 +1,2 @@
 #!/bin/sh
-docker container run -it --network host --env-file ./.env -v /home/nath_dev/Docker_rails_dev/pokill_project/pokill:/app/pokill pokill-dev
+docker container run -it --network host --env-file ./.env -v pokill:/app/pokill pokill-dev
