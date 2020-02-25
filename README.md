@@ -12,4 +12,5 @@ Instructions for setting up a dev rails container for pokill
 Container should start and rails app will be accessible from http://localhost:3000
 ( Note: maybe a short delay when first accessing the site due to webpacker compiling )
 
-Develop code and commit to github as per normal from pokill_dev_container/pokill/ 
+Develop code and commit to github as per normal from pokill_dev_container/pokill/ pushing to :
+https://github.com/315tky/pokill.git
