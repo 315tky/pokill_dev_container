@@ -1,5 +1,11 @@
 FROM ruby:2.6.5
 
+# set up user and group etc..
+ARG USER_ID
+ARG GROUP_ID
+RUN groupadd --gid $GROUP_ID nath_dev
+RUN mkdir /home/nath_dev && useradd --uid $USER_ID --gid $GROUP_ID -d /home/nath_dev nath_dev && chown -R nath_dev:nath_dev /home/nath_dev
+
 # install yarn repo
 RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
 RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
@@ -12,6 +18,7 @@ RUN apt-get update \
 
 # set working dir
 WORKDIR /app/pokill
+RUN chown -R nath_dev:nath_dev /app/pokill
 
 # install bundler and gem files using bundler
 COPY pokill/Gemfile* ./
@@ -20,4 +27,6 @@ RUN bundle install
 
 # expose rails server port and run rails server
 EXPOSE 3000
+
+USER $USER_ID
 CMD ["rails", "server", "-b", "0.0.0.0"]
