@@ -3,8 +3,12 @@ FROM ruby:2.6.5
 # set up user and group etc..
 ARG USER_ID
 ARG GROUP_ID
-RUN groupadd --gid $GROUP_ID nath_dev
-RUN mkdir /home/nath_dev && useradd --uid $USER_ID --gid $GROUP_ID -d /home/nath_dev nath_dev && chown -R nath_dev:nath_dev /home/nath_dev
+ARG USERNAME
+ARG USERGROUP
+ARG HOMEDIR
+
+RUN groupadd --gid $GROUP_ID $USERNAME
+RUN mkdir /home/nath_dev && useradd --uid $USER_ID --gid $GROUP_ID -d $HOMEDIR $USERNAME && chown -R $USERNAME:$USERGROUP $HOMEDIR
 
 # install yarn repo
 RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
@@ -18,7 +22,7 @@ RUN apt-get update \
 
 # set working dir
 WORKDIR /app/pokill
-RUN chown -R nath_dev:nath_dev /app/pokill
+RUN chown -R $USERNAME:$USERGROUP /app/pokill
 
 # install bundler and gem files using bundler
 COPY pokill/Gemfile* ./
