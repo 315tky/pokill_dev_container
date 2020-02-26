@@ -6,10 +6,16 @@ Instructions for setting up a dev rails container for pokill
 4. cp pokill/env .env 
 5. edit .env providing values as necessary
 6. cd pokill && yarn install --check-files 
-7. ./docker-build # to build the container
-8. ./docker-run  # to run the container. Note: check the src path for the -v volume bind is correct, edit to suit
+7. docker-compose up # The first time this runs it will build the pokill-dev app container,
+   and pull down pg and mysql images from docker hub, and initialize those databases.
+8. docker exec -it \<pokill container name\> /bin/bash
+9. bin/rake db:migrate # from inside pokill_dev container
+10. Check localhost:3000 in local browser to check if rails app site working ok. 
 
-Container should start and rails app will be accessible from http://localhost:3000
+11. Upon first install/deploy, need to run the "bin/rake eve_import:\*" tasks to populate,
+    both pg and mysql databases. However, need to import the eve mysql SDE from fuzzworks site,
+    first. See the fuzzworks script and mysql container oneliner note in the eve_mysql_data_import directory 
+
 ( Note: maybe a short delay when first accessing the site due to webpacker compiling )
 
 Develop code and commit to github as per normal from pokill_dev_container/pokill/ pushing to :
