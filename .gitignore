@@ -2,3 +2,4 @@
 .rbenv-vars
 pokill/*
 !pokill/.gitkeep
+eve_mysql_data_import/sde-*TRANQUILITY
