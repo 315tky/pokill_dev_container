@@ -1,12 +1,27 @@
 #!/bin/bash
 
-md5_file="mysql-latest.tar.bz2.md5"
-mysql_file="mysql-latest.tar.bz2"
-md5_url="https://www.fuzzwork.co.uk/dump/mysql-latest.tar.bz2.md5"
-mysql_url="https://www.fuzzwork.co.uk/dump/mysql-latest.tar.bz2"
-curl_flags="--silent --show-error --output"
+conf="conf/eve_mysql_sde_download.conf"
+
+if [ -f $conf ];then
+  . $conf
+else
+  echo "conf file not found, exiting"
+  exit
+fi
+
+if [ ! -d $archived_sde ];then
+  echo "no sde archive dir found, creating"
+  mkdir $archived_sde
+fi
+
+if [ -d $sde_dir ];then
+  echo "old sde directory found, moving to archive" 
+  date=`date -Iseconds`
+  mv $sde_dir $archived_sde/$date
+fi
 
 if [ -f $md5_file ];then
+  echo "old md5sum directory found, removing" 
   rm $md5_file
 fi
 
@@ -22,7 +37,6 @@ if [ ! -f $mysql_file ];then
   if [ "$latest_md5_checksum" = "$mysql_file_checksum" ];then  
      echo "checksums of newly downloaded tar file matches latest md5sum" 
      tar xvfj $mysql_file 
-     exit
   else
      echo "something wrong, latest md5sum and mysql_tar file from fuzzwork remote server do not match"
      exit
@@ -38,10 +52,19 @@ else
     mysql_file_checksum=`/usr/bin/md5sum $mysql_file`
     if [ "$latest_md5_checksum" = "$mysql_file_checksum" ];then
       tar xvfj $mysql_file
-      exit
     else 
       echo "something wrong, latest md5sum and mysql_tar file from fuzzwork remote server do no match"
       exit
     fi
   fi
+fi
+#   
+mysql_container=`docker ps --format '{{.Names}}' --filter "name=mysql" --filter "status=running"`
+if [ $mysql_container ];then
+  echo "running import, latest eve mysql sde -> local mysql db container"
+  docker exec -i pokill_dev_container_mysql_db_1 sh -c 'exec mysql -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" $MYSQL_DATABASE' < $sde_dir/$sde_file
+  echo "sde import completed"
+else
+  echo "mysql container is not running, cannot import, exiting"
+  exit
 fi
