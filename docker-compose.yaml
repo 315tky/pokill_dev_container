@@ -1,0 +1,74 @@
+version: '3.7'
+
+services:
+  app: 
+    image: pokill-dev:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.pokill_dev
+      args:
+        - USER_ID
+        - GROUP_ID
+        - USERNAME
+        - USERGROUP
+        - HOMEDIR
+    environment: 
+      - BASE64_ENCODE
+      - REFRESH_TOKEN
+      - POKILL_DEV_USERNAME
+      - POKILL_DEV_PASSWORD
+      - POKILL_DEV_DBNAME
+      - POKILL_DEV_HOST
+      - EVE_DEV_USERNAME
+      - EVE_DEV_PASSWORD
+      - EVE_DEV_DBNAME
+      - EVE_DEV_HOST
+      - USER_ID
+      - GROUP_ID
+      - USERNAME
+      - USERGROUP
+      - HOMEDIR
+    command: bundle exec puma -C config/puma.rb
+    volumes:
+      - ./pokill:/pokill
+      - tmp_data:/pokill/tmp/sockets
+    depends_on: 
+      - pg_db
+      - mysql_db
+ 
+  nginx_proxy:
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - app
+    volumes:
+      - tmp_data:/pokill/tmp/sockets
+
+  pg_db: 
+    image: postgres:9.6.17-alpine
+    ports:
+      - 5432
+    environment: 
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - POSTGRES_DB
+    volumes: 
+      - pg_data:/var/lib/postgresql/data
+
+  mysql_db:
+    image: mysql:5.7.29
+    environment:
+      - MYSQL_DATABASE
+      - MYSQL_ROOT_PASSWORD
+      - MYSQL_USER
+      - MYSQL_PASSWORD
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  pg_data:
+  mysql_data:
+  tmp_data:
