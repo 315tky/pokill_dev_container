@@ -21,16 +21,15 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 # set working dir
-WORKDIR /app/pokill
-RUN chown -R $USERNAME:$USERGROUP /app/pokill
+WORKDIR /pokill
+RUN chown -R $USERNAME:$USERGROUP /pokill
 
 # install bundler and gem files using bundler
 COPY pokill/Gemfile* ./
 RUN gem install bundler:2.0.2
 RUN bundle install
 
-# expose rails server port and run rails server
-EXPOSE 3000
+RUN mkdir -p tmp/sockets
 
-USER $USER_ID
-CMD ["rails", "server", "-b", "0.0.0.0"]
+#USER $USER_ID
+# Can maybe lose all the user and group stuff, especially in Prod.. need to test it without - nmd - 27th Feb 2020
