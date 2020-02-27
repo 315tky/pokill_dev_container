@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
   app: 
-    image: pokill-dev:latest
+  image: pokill:dev
     build:
       context: .
       dockerfile: Dockerfile.pokill_dev
@@ -28,7 +28,8 @@ services:
       - USERNAME
       - USERGROUP
       - HOMEDIR
-    command: bundle exec puma -C config/puma.rb
+        #command: rails db:migrate
+    command: bash -c "rails db:migrate && bundle exec puma -C config/puma.rb"
     volumes:
       - ./pokill:/pokill
       - tmp_data:/pokill/tmp/sockets
@@ -37,6 +38,7 @@ services:
       - mysql_db
  
   nginx_proxy:
+    image: nginx:dev
     build:
       context: .
       dockerfile: Dockerfile.nginx
@@ -48,7 +50,10 @@ services:
       - tmp_data:/pokill/tmp/sockets
 
   pg_db: 
-    image: postgres:9.6.17-alpine
+    image: postgres:dev
+    build:
+      context: .
+      dockerfile: Dockerfile.pg
     ports:
       - 5432
     environment: 
@@ -59,7 +64,10 @@ services:
       - pg_data:/var/lib/postgresql/data
 
   mysql_db:
-    image: mysql:5.7.29
+    image: mysql:dev
+    build:
+      context: .
+      dockerfile: Dockerfile.mysql
     environment:
       - MYSQL_DATABASE
       - MYSQL_ROOT_PASSWORD
