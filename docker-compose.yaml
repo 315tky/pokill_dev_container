@@ -1,8 +1,9 @@
 version: '3.7'
 
 services:
-  app: 
-  image: pokill:dev
+  app:
+    image: pokill:dev
+    container_name: pokill_app
     build:
       context: .
       dockerfile: Dockerfile.pokill_dev
@@ -12,7 +13,7 @@ services:
         - USERNAME
         - USERGROUP
         - HOMEDIR
-    environment: 
+    environment:
       - BASE64_ENCODE
       - REFRESH_TOKEN
       - POKILL_DEV_USERNAME
@@ -28,17 +29,33 @@ services:
       - USERNAME
       - USERGROUP
       - HOMEDIR
-        #command: rails db:migrate
     command: bash -c "rails db:migrate && bundle exec puma -C config/puma.rb"
     volumes:
       - ./pokill:/pokill
       - tmp_data:/pokill/tmp/sockets
-    depends_on: 
+    depends_on:
       - pg_db
       - mysql_db
- 
+
+  cron:
+    image: cron:dev
+    container_name: cron
+    build:
+      context: .
+      dockerfile: Dockerfile.cron
+    depends_on:
+      - app 
+    command: crond -f -l 8 -L /var/log/pokill/cron.log
+    volumes: 
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/log/pokill:/var/log/pokill
+      - ./cron_tasks/1min:/etc/periodic/1min/:ro
+      - ./cron_tasks/15min:/etc/periodic/15min/:ro
+      - ./cron_tasks/weekly:/etc/periodic/weekly/:ro
+
   nginx_proxy:
-    image: nginx:dev
+    image: nginx:dev 
+    container_name: nginx_proxy
     build:
       context: .
       dockerfile: Dockerfile.nginx
@@ -49,22 +66,24 @@ services:
     volumes:
       - tmp_data:/pokill/tmp/sockets
 
-  pg_db: 
+  pg_db:
     image: postgres:dev
+    container_name: postgres
     build:
       context: .
       dockerfile: Dockerfile.pg
     ports:
       - 5432
-    environment: 
+    environment:
       - POSTGRES_USER
       - POSTGRES_PASSWORD
       - POSTGRES_DB
-    volumes: 
+    volumes:
       - pg_data:/var/lib/postgresql/data
 
   mysql_db:
     image: mysql:dev
+    container_name: mysql
     build:
       context: .
       dockerfile: Dockerfile.mysql
