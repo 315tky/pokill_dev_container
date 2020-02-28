@@ -1,0 +1,43 @@
+FROM ruby:2.6.5
+
+# set up user and group etc..
+ARG USER_ID
+ARG GROUP_ID
+ARG USERNAME
+ARG USERGROUP
+ARG HOMEDIR
+
+RUN groupadd --gid $GROUP_ID $USERNAME
+RUN mkdir $HOMEDIR && useradd --uid $USER_ID --gid $GROUP_ID -d $HOMEDIR $USERNAME && chown -R $USERNAME:$USERGROUP $HOMEDIR
+
+# install yarn repo
+RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
+RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
+
+# do an OS update and install required packages, and clean up
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        postgresql-client vim yarn nodejs \
+    && rm -rf /var/lib/apt/lists/*
+
+# set working dir
+WORKDIR /pokill
+RUN chown -R $USERNAME:$USERGROUP /pokill
+
+# get src code from git repo
+RUN git clone https://github.com/315tky/pokill.git .
+
+# install bundler and gem files using bundler
+RUN gem install bundler:2.0.2
+RUN bundle install --without development test
+
+# make sockets dir ( for nginx <-> puma comms )
+RUN mkdir -p tmp/sockets && mkdir -p tmp/pids && touch tmp/pids/server.pid
+
+ENV RAILS_ENV production
+RUN echo wq! | EDITOR="vi" rails credentials:edit
+RUN yarn install --check-files
+RUN rails assets:precompile
+
+#USER $USER_ID
+# Can maybe lose all the user and group stuff, especially in Prod.. need to test it without - nmd - 27th Feb 2020

@@ -1,0 +1,82 @@
+version: '3.7'
+
+services:
+  app: 
+    image: pokill:prod
+    build:
+      context: .
+      dockerfile: Dockerfile.pokill_prod
+      args:
+        - USER_ID
+        - GROUP_ID
+        - USERNAME
+        - USERGROUP
+        - HOMEDIR
+    environment: 
+      - BASE64_ENCODE
+      - REFRESH_TOKEN
+      - POKILL_PROD_USERNAME
+      - POKILL_PROD_PASSWORD
+      - POKILL_PROD_DBNAME
+      - POKILL_PROD_HOST
+      - EVE_PROD_USERNAME
+      - EVE_PROD_PASSWORD
+      - EVE_PROD_DBNAME
+      - EVE_PROD_HOST
+      - USER_ID
+      - GROUP_ID
+      - USERNAME
+      - USERGROUP
+      - HOMEDIR
+      - RAILS_ENV
+    command: bash -c "rails db:migrate && bundle exec puma -C config/puma.rb"
+    #command: bundle exec puma -C config/puma.rb
+    volumes:
+      - tmp_data:/pokill/tmp/sockets
+    depends_on: 
+      - pg_db
+      - mysql_db
+ 
+  nginx_proxy:
+    image: nginx-proxy:prod
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - app
+    volumes:
+      - tmp_data:/pokill/tmp/sockets
+
+  pg_db: 
+    image: postgres:prod
+    build: 
+      context: .
+      dockerfile: Dockerfile.pg
+    ports:
+      - 5432
+    environment: 
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - POSTGRES_DB
+    volumes: 
+      - pg_data:/var/lib/postgresql/data
+
+  mysql_db:
+    image: mysql:prod
+    build: 
+      context: .
+      dockerfile: Dockerfile.mysql
+    environment:
+      - MYSQL_DATABASE
+      - MYSQL_ROOT_PASSWORD
+      - MYSQL_USER
+      - MYSQL_PASSWORD
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  pg_data:
+  mysql_data:
+  tmp_data:
