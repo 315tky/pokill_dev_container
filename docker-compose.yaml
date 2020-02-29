@@ -13,6 +13,10 @@ services:
         - USERNAME
         - USERGROUP
         - HOMEDIR
+    deploy:
+      resources:
+        limits:
+          memory: 1024m
     environment:
       - BASE64_ENCODE
       - REFRESH_TOKEN
@@ -43,6 +47,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.cron
+    deploy:
+      resources:
+        limits: 
+          memory: 128m
     depends_on:
       - app 
     command: crond -f -l 8 -L /var/log/pokill/cron.log
@@ -61,6 +69,10 @@ services:
       dockerfile: Dockerfile.nginx
     ports:
       - "80:80"
+    deploy:
+      resources:
+        limits:
+          memory: 128m
     depends_on:
       - app
     volumes:
@@ -74,6 +86,10 @@ services:
       dockerfile: Dockerfile.pg
     ports:
       - 5432
+    deploy:
+      resources:
+        limits:
+          memory: 256m
     environment:
       - POSTGRES_USER
       - POSTGRES_PASSWORD
@@ -87,6 +103,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.mysql
+    deploy:
+      resources:
+        limits:
+          memory: 128m
     environment:
       - MYSQL_DATABASE
       - MYSQL_ROOT_PASSWORD

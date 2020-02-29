@@ -62,7 +62,7 @@ fi
 mysql_container=`docker ps --format '{{.Names}}' --filter "name=mysql" --filter "status=running"`
 if [ $mysql_container ];then
   echo "running import, latest eve mysql sde -> local mysql db container"
-  docker exec -i pokill_dev_container_mysql_db_1 sh -c 'exec mysql -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" $MYSQL_DATABASE' < $sde_dir/$sde_file
+  docker exec -i mysql sh -c 'exec mysql -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" $MYSQL_DATABASE' < $sde_dir/$sde_file
   echo "sde import completed"
 else
   echo "mysql container is not running, cannot import, exiting"
