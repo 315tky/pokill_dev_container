@@ -3,7 +3,7 @@ version: '3.7'
 services:
   app:
     image: pokill:dev
-    container_name: pokill_app
+    container_name: app_pokill
     build:
       context: .
       dockerfile: Dockerfile.pokill_dev
@@ -36,6 +36,7 @@ services:
     command: bash -c "rails db:migrate && bundle exec puma -C config/puma.rb"
     volumes:
       - ./pokill:/pokill
+      - ./eve_mysql_data_import:/pokill/lib/eve_mysql_data_import
       - tmp_data:/pokill/tmp/sockets
     depends_on:
       - pg_db
@@ -43,7 +44,7 @@ services:
 
   cron:
     image: cron:dev
-    container_name: cron
+    container_name: cron_pokill
     build:
       context: .
       dockerfile: Dockerfile.cron
@@ -63,7 +64,7 @@ services:
 
   nginx_proxy:
     image: nginx:dev 
-    container_name: nginx_proxy
+    container_name: nginx_proxy_pokill
     build:
       context: .
       dockerfile: Dockerfile.nginx
@@ -80,7 +81,7 @@ services:
 
   pg_db:
     image: postgres:dev
-    container_name: postgres
+    container_name: postgres_pokill
     build:
       context: .
       dockerfile: Dockerfile.pg
@@ -99,7 +100,7 @@ services:
 
   mysql_db:
     image: mysql:dev
-    container_name: mysql
+    container_name: mysql_pokill
     build:
       context: .
       dockerfile: Dockerfile.mysql

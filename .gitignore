@@ -3,3 +3,8 @@
 pokill/*
 !pokill/.gitkeep
 eve_mysql_data_import/sde-*TRANQUILITY
+eve_mysql_data_import/archived*
+eve_mysql_data_import/mysql-latest*
+pokill_stage_container/eve_mysql_data_import/sde-*TRANQUILITY
+pokill_stage_container/eve_mysql_data_import/archived*
+pokill_stage_container/eve_mysql_data_import/mysql-latest*

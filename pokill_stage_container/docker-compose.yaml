@@ -1,8 +1,9 @@
 version: '3.7'
 
 services:
-  app: 
+  app:
     image: pokill:prod
+    container_name: app_pokill
     build:
       context: .
       dockerfile: Dockerfile.pokill_prod
@@ -12,7 +13,11 @@ services:
         - USERNAME
         - USERGROUP
         - HOMEDIR
-    environment: 
+    deploy:
+      resources:
+        limits:
+          memory: 1024m
+    environment:
       - BASE64_ENCODE
       - REFRESH_TOKEN
       - POKILL_PROD_USERNAME
@@ -29,45 +34,81 @@ services:
       - USERGROUP
       - HOMEDIR
       - RAILS_ENV
-    command: bash -c "rails db:migrate && bundle exec puma -C config/puma.rb"
-    #command: bundle exec puma -C config/puma.rb
+    command: bash -c "sleep 10 && rails db:migrate && bundle exec puma -C config/puma.rb"
     volumes:
+      # - ./pokill:/pokill
+      - ./eve_mysql_data_import:/pokill/lib/eve_mysql_data_import
       - tmp_data:/pokill/tmp/sockets
-    depends_on: 
+    depends_on:
       - pg_db
       - mysql_db
- 
+
+  cron:
+    image: cron:prod
+    container_name: cron_pokill
+    build:
+      context: .
+      dockerfile: Dockerfile.cron
+    deploy:
+      resources:
+        limits: 
+          memory: 128m
+    depends_on:
+      - app 
+    command: crond -f -l 8 -L /var/log/pokill/cron.log
+    volumes: 
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/log/pokill:/var/log/pokill
+      - ./cron_tasks/1min:/etc/periodic/1min/:ro
+      - ./cron_tasks/15min:/etc/periodic/15min/:ro
+      - ./cron_tasks/weekly:/etc/periodic/weekly/:ro
+
   nginx_proxy:
-    image: nginx-proxy:prod
+    image: nginx:prod
+    container_name: nginx_proxy_pokill
     build:
       context: .
       dockerfile: Dockerfile.nginx
     ports:
       - "80:80"
+    deploy:
+      resources:
+        limits:
+          memory: 128m
     depends_on:
       - app
     volumes:
       - tmp_data:/pokill/tmp/sockets
 
-  pg_db: 
+  pg_db:
     image: postgres:prod
-    build: 
+    container_name: postgres_pokill
+    build:
       context: .
       dockerfile: Dockerfile.pg
     ports:
       - 5432
-    environment: 
+    deploy:
+      resources:
+        limits:
+          memory: 256m
+    environment:
       - POSTGRES_USER
       - POSTGRES_PASSWORD
       - POSTGRES_DB
-    volumes: 
+    volumes:
       - pg_data:/var/lib/postgresql/data
 
   mysql_db:
     image: mysql:prod
-    build: 
+    container_name: mysql_pokill
+    build:
       context: .
       dockerfile: Dockerfile.mysql
+    deploy:
+      resources:
+        limits:
+          memory: 128m
     environment:
       - MYSQL_DATABASE
       - MYSQL_ROOT_PASSWORD
